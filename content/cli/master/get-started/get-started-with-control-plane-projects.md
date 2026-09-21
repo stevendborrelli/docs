@@ -801,21 +801,6 @@ TypeScript is a good choice if you want your composition logic type checked
 before it runs. The function is an ordinary Node.js project, so you can use any
 package from [npm](https://www.npmjs.com).
 
-Unlike the other languages, TypeScript model generation is opt in. Add it to
-`crossplane-project.yaml` before generating the function:
-
-```yaml
-spec:
-  schemas:
-    languages:
-    - typescript
-```
-
-Without this the CLI generates no TypeScript models, and the scaffolded function
-would have no `crossplane-models` dependency to import from. Rather than
-scaffold a function that can't compile, `function generate` fails and tells you
-to add the language.
-
 Generate a TypeScript function named `compose-webapp` and add it to the
 composition's pipeline:
 
@@ -838,8 +823,8 @@ import {
   normal,
 } from '@crossplane-org/function-sdk-typescript';
 import { type IWebApp } from 'crossplane-models/platform.example.com/v1alpha1';
-import { Deployment } from 'kubernetes-models/apps/v1';
-import { Service } from 'kubernetes-models/v1';
+import { Deployment } from 'crossplane-models/apps/v1';
+import { Service } from 'crossplane-models/v1';
 
 /**
  * compose turns a WebApp into a Deployment and a Service.
@@ -902,14 +887,9 @@ export const compose: ComposeFunction = async (req, rsp, logger) => {
 ```
 
 The function reads the observed `WebApp` XR, then builds a `Deployment` and a
-`Service` from its `spec`.
-
-Types come from two places. `crossplane-models` holds the bindings the CLI
-generated from your XRD, so `IWebApp` describes the XR you defined. Kubernetes
-built-ins like `Deployment` and `Service` come from the
-[kubernetes-models](https://www.npmjs.com/package/kubernetes-models) package,
-which the function scaffold already depends on. The CLI doesn't generate
-bindings for the Kubernetes API itself.
+`Service` from its `spec`. The `crossplane-models` package is the type bindings
+the CLI generated: `IWebApp` from your XRD, and `Deployment`/`Service` from the
+`k8s:` dependency you added earlier.
 
 `fromModel` converts a typed object into the protobuf `Resource` value that
 `rsp.desired.resources` holds. Assigning the model directly doesn't compile.
